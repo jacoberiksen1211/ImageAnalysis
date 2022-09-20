@@ -5,7 +5,7 @@ Created on Tue Sep 13 19:07:44 2022
 @author: Jacob
 """
 
-from skimage import color, io, measure, img_as_ubyte
+from skimage import color, io, measure, img_as_ubyte, exposure
 from skimage.measure import profile_line
 from skimage.transform import rescale, resize
 import matplotlib.pyplot as plt
@@ -118,7 +118,7 @@ io.show()
 # one or zero
 # create and show a mask like this:
     # the mask shows white for all px higher than 100 and else 0
-mask = im_org > 250
+mask = im_org > 100
 plt.figure()
 plt.imshow(mask, cmap = "gray")
 plt.show()
@@ -156,17 +156,127 @@ imJbe = io.imread(in_dir + imJbeName)
 io.imshow(imJbe)
 io.show()
 
+#examine size
+print(imJbe.shape)
+#downscale
+scaledJbe = rescale(imJbe, 0.25, anti_aliasing=True, channel_axis=2)
+#examine dimensions again
+print(scaledJbe.shape)
+
+#Try to find a way to automatically scale your image so the resulting width
+#(number of columns) is always equal to 400, no matter the size of the input
+#image?
+
+scaleFactor = 400/imJbe.shape[1]
+scaledJbe = rescale(imJbe, scaleFactor, anti_aliasing=True, channel_axis=2)
+print(scaledJbe.shape)
+
+#transform into gray-level image
+imGray = color.rgb2gray(scaledJbe)
+imByte = img_as_ubyte(imGray)
+io.imshow(imByte)
+io.show()
+#We are forcing the pixel type back into unsigned bytes using the img as ubyte
+#function, since the rgb2gray functions returns the pixel type as floating point
+#numbers.
+
+#Compute and show histogram of own image
+plt.hist(imByte.ravel(), bins=256)
+plt.title("JBEGRAY histogram")
+io.show()
+
+#load dark and bright histograms
+bright = io.imread(in_dir + "bright.jpg")
+scaleFactor = 400/bright.shape[1]
+bright = rescale(bright, scaleFactor, anti_aliasing=True, channel_axis=2)
+bright = color.rgb2gray(bright)
+bright = img_as_ubyte(bright)
+io.imshow(bright)
+io.show()
+plt.hist(bright.ravel(), bins=256)
+plt.title("Bright histogram")
+io.show()
+
+dark = io.imread(in_dir + "dark.jpg")
+scaleFactor = 400/dark.shape[1]
+dark = rescale(dark, scaleFactor, anti_aliasing=True, channel_axis=2)
+dark = color.rgb2gray(dark)
+dark = img_as_ubyte(dark)
+io.imshow(dark)
+io.show()
+plt.hist(dark.ravel(), bins=256)
+plt.title("Dark histogram")
+io.show()
+
+#differences are that bright has a lot of lines to the right (more high values
+#dark has all the lines to the left instead... (low values)
+
+""" split RGB channels"""
+#load dtu sign. 
+dtu = io.imread(in_dir + "DTUSign1.jpg")
+io.imshow(dtu)
+io.show()
+#get the red values
+dtu_red = dtu[:, :, 0]
+io.imshow(dtu_red)
+io.show()
+#get green values
+dtu_green = dtu[:, :, 1]
+io.imshow(dtu_green)
+io.show()
+#get blue values
+dtu_blue = dtu[:, :, 2]
+io.imshow(dtu_blue)
+io.show()
+
+
+""" Simple image manipulation """
+#create black rectangle in image using image slicing
+# set pixels that are in (row 500 to 1000 AND column 800 to 1500) to 0
+dtu[500:1000, 800:1500, :] = 0
+io.imshow(dtu)
+io.show()
+
+#save to disk
+#io.imsave("DTUSign1_marked.jpg", dtu)
+
+#make blue rectangle on the sign
+dtu[1500:1750, 2200:2800, :] = [0, 0, 255]
+io.imshow(dtu)
+io.show()
+
+#turn gray image into RGB with color.gray2rgb. Use mask to set bones blue!
+im_org = io.imread(in_dir + "metacarpals.png")
+io.imshow(im_org)
+io.show()
+im_org = exposure.rescale_intensity(im_org, (108, 150)) #autocontrast
+io.imshow(im_org)
+io.show()
+im_rgb = color.gray2rgb(im_org)
+mask = im_org > 108
+im_rgb[mask] = [0, 0, 255]
+io.imshow(im_rgb)
+io.show()
+
+im_org = io.imread(in_dir + "metacarpals.png")
+p = profile_line(im_org, (342, 77), (320, 160))
+plt.plot(p)
+plt.ylabel("Intensity")
+plt.xlabel("Distance along line")
+plt.show()
 
 
 
-
-
-
-
-
-
-
-
+im_org = io.imread(in_dir + "road.png")
+im_gray = color.rgb2gray(im_org)
+ll = 200
+im_crop = im_gray[40:40 + ll, 150:150 + ll]
+xx, yy = np.mgrid[0:im_crop.shape[0], 0:im_crop.shape[1]]
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+surf = ax.plot_surface(xx, yy, im_crop, rstride=1, cstride=1, 
+                       cmap=plt.cm.jet,linewidth=0)
+fig.colorbar(surf, shrink=0.5, aspect=5)
+plt.show()
 
 
 
