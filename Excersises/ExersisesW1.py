@@ -258,6 +258,10 @@ im_rgb[mask] = [0, 0, 255]
 io.imshow(im_rgb)
 io.show()
 
+# To investigate the properties of the hollow bone a grey-level profile 
+#can be sampled across the bone. Use the tool profile line to sample 
+#profile across the bone:
+    #shows the intensity over a line
 im_org = io.imread(in_dir + "metacarpals.png")
 p = profile_line(im_org, (342, 77), (320, 160))
 plt.plot(p)
@@ -266,7 +270,7 @@ plt.xlabel("Distance along line")
 plt.show()
 
 
-
+#show intensity of image in 3d
 im_org = io.imread(in_dir + "road.png")
 im_gray = color.rgb2gray(im_org)
 ll = 200
@@ -278,9 +282,31 @@ surf = ax.plot_surface(xx, yy, im_crop, rstride=1, cstride=1,
 fig.colorbar(surf, shrink=0.5, aspect=5)
 plt.show()
 
+""" DICOM IMAGES """
+#read dicom header info
+im_name = "1-442.dcm"
+ds = dicom.dcmread(in_dir + im_name)
+print(ds)
+#what is the size ?(cols and rows)
+print("size of dicom: cols=" + str(ds.Columns) + " rows=" + str(ds.Rows))
+#512, 512
 
+#We can get access to the pixel values of the DICOM slice by:
+im = ds.pixel_array
+#Try to find the shape of this image and the pixel type? Does the shape match
+#the size of the image found by inspecting the image header information?
+print(im.shape)
+#yes shape matches header values
 
-
-
+#show dicom image or dicom slize
+io.imshow(im, vmin=-1000, vmax=1000, cmap="gray")
+io.show()
+#As can be seen, the pixel values are stored as 16 bit integers and therefore it is
+#necessary to specify which value range that should be mapped to the gray scale
+#spectrum (using vmin and vmax). Try to experiment with the vmin and vmax
+#values to get the best possible contrast in the image.
+io.imshow(im, vmin=-500, vmax=500, cmap="gray")
+io.show()
+#set to -500 and 500 for more contrast and sharper lines
 
 
