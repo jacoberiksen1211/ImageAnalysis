@@ -44,3 +44,36 @@ print(camera_b_distance(15, 15000)) #15.015015015015015
 #- the ccd distance is reduced but less and less the longer the object dist is!
 
 #Exercise 3
+dist2object = 5000 #mm (distance from cam to thomas the model)
+object_height = 1800 #mm (the height of thomas the model)
+focal_length = 5 #mm
+
+#what distance from lens inside cam will the focues image form?
+print(camera_b_distance(focal_length, dist2object ))
+
+#how tall will thomas appear inside camera?
+#use (object height/distance to object = heightinsidecam/focusdist)
+# aka "g/G = b/B"
+#NOTE: assume that camera is alligned with thomas center
+g = dist2object
+G = object_height
+b = camera_b_distance(focal_length, dist2object)
+B = b/(g/G)
+print(f"Thomas is {B} tall on the CCD chip")
+
+#what is the size of a single pixel in the ccd chip?
+# ps: the chip is 640x480 and 6,4mm * 4,8 mm
+print(f"pixelwidth {6.4/640}mm, pixelheight {4.8/480}mm")
+
+#how tall is thomas in pixels on the chip?
+print(f"thomas is {B/(4.8/480)} pixels tall")
+
+#what is the horizontal field of view in degrees?
+#note USE METERS!
+FOV_x = math.degrees(math.atan2(3.2e-3, focal_length/1000) * 2)
+print(f"Horizontal FOV is {FOV_x} deg")
+
+#what is the vertical field of view in degrees?
+#NOTE USE METERS!
+FOV_y = math.degrees(math.atan2(2.4e-3, focal_length/1000) * 2)
+print(f"Vertical FOV is {FOV_y} deg")
